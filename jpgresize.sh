@@ -3,7 +3,11 @@ cliext="${1##*.}"
 
 
 # settings
+if [[ -z $2 ]]; then
 longestSide=2048
+else
+longestSide=$2
+fi
 size=$longestSide'x'$longestSide'>'
 colorspaceForResize='-colorspace LAB'
 optional1='-set option:filter:lobes 8'
