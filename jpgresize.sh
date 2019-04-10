@@ -47,6 +47,13 @@ resizeJpg() {
   jpegoptim -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
 };
 export -f resizeJpg;
+resizeTiff() {
+  filename="$1"
+  outFn="${filename%.*}__$longestSide"'__q'"$jpegQuality"
+  convert "$filename"[0] ${cliArray[@]} "$outFn"'.jpg' 2>/dev/null
+  jpegoptim -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
+};
+export -f resizeJpg;
 resizePng() {
   filename="$1"
   outFn="${filename%.*}__$longestSide"'__q'"$pngQuality"
@@ -87,7 +94,10 @@ then
   resizeJpg "$param"
   elif [ $cliext == 'tif' ]
   then
-  resizeJpg "$param"
+  resizeTiff "$param"
+  elif [ $cliext == 'tiff' ]
+  then
+  resizeTiff "$param"
   elif [ $cliext == 'png' ]
   then
   resizePng "$param"
