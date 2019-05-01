@@ -15,13 +15,13 @@ profile='-profile:v high -level 4.0'
 outputVideo="${inputVideo%.*}_b$bitrate.mp4"
 if [[ -z $3 ]]; then
   # no lut
-  filters=('format=pix_fmts=rgb24,scale=-1:720,format=pix_fmts=yuv420p')
+  filters=('format=pix_fmts=rgb24,scale=-2:720,format=pix_fmts=yuv420p')
 else
   # lut
   filters=('format=pix_fmts=rgb24,lut3d=file='"$lutFile"',scale=-1:720,format=pix_fmts=yuv420p')
 fi
 # https://trac.ffmpeg.org/wiki/FilteringGuide
-additional=('-movflags' '+faststart' "-preset $preset" "-tune $tune" "$profile")
+additional=('-movflags' '+faststart' "-preset $preset" "-tune $tune" "$profile" '-c:v' "libx264" '-b:v' "$bitrate")
 spamming=("-hide_banner" "-loglevel $loglevel" '-stats -y')
 # afterInput='-preset '"$preset"' -tune '"$tune"' '"$additional"' '"$profile"' -c:v libx264 -b:v '"$bitrate"
 # audio=('-c:a libfdk_aac' '-b:a 128k')
