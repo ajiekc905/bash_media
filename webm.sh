@@ -15,7 +15,8 @@ profile='-profile:v high -level 4.0'
 outputVideo="${inputVideo%.*}_b$bitrate.mp4"
 if [[ -z $3 ]]; then
   # no lut
-  filters=('format=pix_fmts=rgb24,scale=-2:720,format=pix_fmts=yuv420p')
+  # filters=('format=pix_fmts=rgb24,scale=-2:720,format=pix_fmts=yuv420p')
+  filters=('mpdecimate,setpts=PTS,format=pix_fmts=rgb24,scale=-2:720,format=pix_fmts=yuv420p')
 else
   # lut
   filters=('format=pix_fmts=rgb24,lut3d=file='"$lutFile"',scale=-1:720,format=pix_fmts=yuv420p')
