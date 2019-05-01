@@ -31,3 +31,12 @@ audio=('-an')
 echo $outputVideo
 ffmpeg ${spamming[@]} -i "$1" ${additional[@]} -vf "[in]${filters[@]}[out]"  -pass 1  -an -f mp4 /dev/null
 ffmpeg ${spamming[@]} -i "$1" ${additional[@]} -vf "[in]${filters[@]}[out]"  -pass 2  ${audio[@]} "$outputVideo"
+
+
+
+# Use the mpdecimate filter, whose purpose is to "Drop frames that do not differ greatly from the previous frame in order to reduce frame rate."
+#     This will generate a console readout showing which frames the filter thinks are duplicates.
+#     ffmpeg -i input.mp4 -vf mpdecimate -loglevel debug -f null -
+#     To generate a video with the duplicates removed
+#     ffmpeg -i input.mp4 -vf mpdecimate,setpts=N/FRAME_RATE/TB out.mp4
+# explanation https://stackoverflow.com/questions/37088517/ffmpeg-remove-sequentially-duplicate-frames
