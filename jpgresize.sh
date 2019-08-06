@@ -15,10 +15,19 @@ sigmaContrast1='+sigmoidal-contrast 6.5,50%'
 sigmaContrast2='-sigmoidal-contrast 6.5,50%'
 resizeType='-filter Lanczos'
 sharper='-unsharp 1.5x1+0.7+0.02'
+sharper=''
 #  Upscaling     "-unsharp 0x0.75+0.75+0.008"
 #  Downsampling  "-unsharp 1.5x1+0.7+0.02".
 quality='-quality 100'
-resizeOperator='-distort resize '"$size"
+if [[ $2 == 0 ]]; then
+  resizeOperator=''
+  sigmaContrast1=''
+  sigmaContrast2=''
+  resizeType=''
+  longestSide='orig'
+else
+  resizeOperator='-distort resize '"$size"
+fi
 colorspaceAfterResize='-colorspace sRGB'
 jpegQuality=90
 cliArray=("$colorspaceForResize" "$optional1" "$sigmaContrast1" "$resizeType" "$resizeOperator" "$colorspaceAfterResize" "$sharper" "$sigmaContrast2" "$quality")
@@ -42,23 +51,43 @@ fi
 
 resizeJpg() {
   filename="$1"
-  outFn="${filename%.*}__$longestSide"'__q'"$jpegQuality"
-  convert "$filename" ${cliArray[@]} "$outFn"'.jpg'
-  jpegoptim -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
+  DIR=$(dirname "${filename}")
+  FN=$(basename "${filename}")
+  outDir="$DIR"/"$longestSide"'__q'"$jpegQuality"
+  if ! [[ -d "$outDir" ]]; then
+    mkdir "$outDir"
+  fi
+  outFn="$outDir"/"${FN%.*}"
+  convert -quiet "$filename"[0] ${cliArray[@]} "$outFn"'.jpg'
+  jpegoptim -v -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
 };
 export -f resizeJpg;
+
 resizeTiff() {
   filename="$1"
-  outFn="${filename%.*}__$longestSide"'__q'"$jpegQuality"
-  convert "$filename"[0] ${cliArray[@]} "$outFn"'.jpg' 2>/dev/null
-  jpegoptim -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
+  DIR=$(dirname "${filename}")
+  FN=$(basename "${filename}")
+  outDir="$DIR"/"$longestSide"'__q'"$jpegQuality"
+  if ! [[ -d "$outDir" ]]; then
+    mkdir "$outDir"
+  fi
+  outFn="$outDir"/"${FN%.*}"
+  convert -quiet "$filename"[0] ${cliArray[@]} "$outFn"'.jpg'
+  jpegoptim -v -T 10 -m $jpegQuality -p --strip-none  "$outFn"'.jpg'
 };
-export -f resizeJpg;
+export -f resizeTiff;
+
 resizePng() {
   filename="$1"
-  outFn="${filename%.*}__$longestSide"'__q'"$pngQuality"
+  DIR=$(dirname "${filename}")
+  FN=$(basename "${filename}")
+  outDir="$DIR"/"$longestSide"'__q'"$jpegQuality"
+  if ! [[ -d "$outDir" ]]; then
+    mkdir "$outDir"
+  fi
+  outFn="$outDir"/"${FN%.*}"
   convert "$filename" ${cliArray[@]} "$outFn"'.png'
-  pngquant --force --skip-if-larger --quality $quality --speed 1 --nofs "$outFn"'.png'
+  pngquant --force --skip-if-larger --quality $pngQuality --speed 1 --nofs "$outFn"'.png'
 };
 export -f resizePng;
 
@@ -70,8 +99,8 @@ then
 elif [ -d "$param" ]
 then
   echo 'directory '"$param"
-  jpegs=$(find "$param" -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.tif' -or -iname '*.tiff')
-  pngs=$(find "$param" -iname '*.png')
+  jpegs=$(find "$param" -maxdepth 1 -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.tif' -or -iname '*.tiff')
+  pngs=$(find "$param" -maxdepth 1 -iname '*.png')
 
   while read -r line; do
       resizeJpg "$line"
